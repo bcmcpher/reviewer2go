@@ -3,8 +3,9 @@ import os
 import json
 import argparse
 
-from langchain.document_loaders.generic import GenericLoader
-from langchain.document_loaders.parsers import GrobidParser
+# from langchain.document_loaders.generic import GenericLoader
+# from langchain.document_loaders.parsers import GrobidParser
+from langchain.document_loaders import PyPDFLoader
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -30,21 +31,21 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 #
 
 # the initial question to summarize the feature (sample size)
-question = "Ignoring any behavioral study. How many subjects participated in the MRI study?"
+question = "Ignore any description of the behavioral study. How many subjects participated in the MRI study?"
 
 # the template string for the structured data extraction (refinement)
 template_string = """
 You are a data extrator who specializes in pulling structured data from a document.
 You report only what is required in the format requested.
-If you do not know the answer do not guess, fill in 0.
+If you do not know the answer do not guess. Fill in 0 when you are unsure.
 
 The excerpt below delimited by triple backticks contains part of a manuscipt.
 Only describe the magnetic resonance imaging (MRI) study.
-Do not describe any behavioral study.
+Do not describe the sample of any behavioral study.
 We want to know the following information about the MRI study:
 1. How many participants were recruited?
 2. How many participants consented to participate?
-3. How many participants refused to participane?
+3. How many participants refused to participate?
 4. How many participants were excluded from the analysis?
 5. How many participants were included in the analysis?
 
@@ -77,8 +78,8 @@ pydantic_parser = PydanticOutputParser(pydantic_object=SampleSize)
 #
 
 embedding = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-llm = OpenAI(openai_api_key=OPENAI_API_KEY)
-llm_chat = ChatOpenAI(openai_api_key=OPENAI_API_KEY)
+llm = OpenAI(openai_api_key=OPENAI_API_KEY, temperature=0.0)
+llm_chat = ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0.0)
 
 #
 # run the process
@@ -101,7 +102,10 @@ def main():
     print(f" -- Attempting to load file: {pdf}")
 
     # load with the fancy loader
-    loader = GenericLoader.from_filesystem(pdf, parser=GrobidParser(segment_sentences=False))
+    # pdf_parser = GrobidParser(segment_sentences=False)
+    # loader = GenericLoader.from_filesystem(pdf, parser=pdf_parser)
+
+    loader = PyPDFLoader(pdf)
 
     # create the object
     pages = loader.load()
@@ -131,7 +135,6 @@ def main():
                                            chain_type_kwargs={"prompt": QA_CHAIN_PROMPT})
 
     # the hardcoded question of returning headlines
-    # question = f"Ignoring any behavioral study. How many subjects participated in the MRI study?"
     result = qa_chain({"query": question})
 
     print(result['result'])
@@ -150,7 +153,6 @@ def main():
     messages = prompt.format_messages(manuscript_chunk=result['result'], format_instructions=format_instructions)
 
     # parse get the parsed output
-    # output = llm.invoke(messages)
     output = llm_chat(messages)
 
     # pull the typed object?
