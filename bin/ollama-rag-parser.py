@@ -1,23 +1,28 @@
-
 import json
 import argparse
 
-from langchain.document_loaders.generic import GenericLoader
-from langchain.document_loaders.parsers import GrobidParser
+# pip install langchain-chroma langchain-test-splitters langchainhub
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders.generic import GenericLoader
+from langchain_community.document_loaders.parsers import PyPDFParser
+from langchain_community.document_loaders.parsers import GrobidParser
+# GROBID is a separate service that needs to be running in Docker (GPU preferred)
 
-from langchain.vectorstores import Chroma
-from langchain.embeddings import OllamaEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from langchain.llms import Ollama
-from langchain.chat_models import ChatOllama
+from langchain_chroma import Chroma
 
-from langchain import hub
-from langchain.chains import RetrievalQA
+from langchain_community.embeddings import OllamaEmbeddings
 
-from langchain.prompts import ChatPromptTemplate
+from langchain_community.llms import Ollama
+from langchain_community.chat_models import ChatOllama
+
+from langchain import hub  # do I need this...?
+from langchain.chains import RetrievalQA  # deprecated
+
+from langchain_core.prompts.chat import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
+
 from pydantic import BaseModel, Field, field_validator
 
 #
@@ -80,6 +85,10 @@ llm_chat = ChatOllama(model=model, temperature=0.0)
 # run the data extraction
 #
 
+pdf = "/home/bcmcpher/Projects/brainhack2023/articles/pdfs/Wang_2022.pdf"
+# doesn't work for this one anymore...
+# the pdf loading did change.
+
 
 def main():
 
@@ -96,8 +105,10 @@ def main():
     out = args.out
     print(f" -- Attempting to load file: {pdf}")
 
-    # load with the fancy loader
-    loader = GenericLoader.from_filesystem(pdf, parser= GrobidParser(segment_sentences=False))
+    # load with the regular (not fancy) loader
+    loader = GenericLoader.from_filesystem(pdf, parser=PyPDFParser())
+    # loader = GenericLoader.from_filesystem(pdf, parser=GrobidParser(segment_sentences=False))
+    # Grobid is a conainerized service that needs to be running in the background...
 
     # create the object
     pages = loader.load()
@@ -127,7 +138,7 @@ def main():
                                            chain_type_kwargs={"prompt": QA_CHAIN_PROMPT})
 
     # the hardcoded question of returning headlines
-    result = qa_chain({"query": question})
+    result = qa_chain.invoke({"query": question})
 
     print(result['result'])
 
@@ -145,7 +156,7 @@ def main():
     messages = prompt.format_messages(manuscript_chunk=result['result'], format_instructions=format_instructions)
 
     # parse get the parsed output
-    output = llm_chat(messages)
+    output = llm_chat.invoke(messages)
 
     # pull the typed object?
     extracted_subjects = pydantic_parser.parse(output.content)
