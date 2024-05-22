@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import re
 
+
 # look for protocols
 protocol = "cobidas"
 
@@ -32,7 +33,7 @@ for i, activity in enumerate(activities_order):
     # extract the activity features
     activity_file = protocol_file.parent / activity
     activity_name = activity_file.stem.replace("_schema", "")
-    print(f"Processing activity #{i:>01}: {activity_name}")
+    print(f"Processing activity #{i+1:>01}: {activity_name}")
 
     # load the activity schema
     with open(activity_file) as f:
@@ -59,4 +60,4 @@ for i, activity in enumerate(activities_order):
         cquest = re.sub(".* - ", "", question)
 
         # print with new structures to track
-        print(f" -- {i:>02}.{j:>02} - {cquest}")
+        print(f" -- {i+1:>02}.{j:>02} - {cquest}")
