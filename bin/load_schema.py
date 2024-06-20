@@ -60,4 +60,6 @@ for i, activity in enumerate(activities_order):
         cquest = re.sub(".* - ", "", question)
 
         # print with new structures to track
-        print(f" -- {i+1:>02}.{j:>02} - {cquest}")
+        # print(f" -- {i+1:>02}.{j:>02} - {cquest}")
+
+        #
