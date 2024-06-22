@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import dotenv
 
@@ -63,11 +64,11 @@ separators =  [
     "\n",
     ".",
     ",",
-    " ",
     "\uff0c",  # Fullwidth comma
     "\u3001",  # Ideographic comma
     "\uff0e",  # Fullwidth full stop
     "\u3002",  # Ideographic full stop
+    " ",
     ]
 
 # split text based on chunk sizes
@@ -101,8 +102,8 @@ retriever = vectorstore.as_retriever()
 
 # rewrite the COBIDAS value as a good prompt
 prompt_redo = PromptTemplate.from_template("""
-You are an assistant for question-answering tasks. Please take the the following text and restate it as a question that can be answered by an LLM with RAG context. Be precise in the details of the question so the model can easily determine if the information exists in the provided context.
-Question: {question}
+You are an assistant for question-answering tasks. Please take the the following text and restate it as a question that can be answered by an LLM with RAG context. Be precise in the details of the question so the model can easily determine if the information exists in the provided context. Restate the imporance of the information in a single sentence before restating the prompt as a question.
+Prompt: {prompt}
 """)
 
 # create the boolean prompt
