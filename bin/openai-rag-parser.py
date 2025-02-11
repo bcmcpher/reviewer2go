@@ -10,10 +10,14 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from langchain.vectorstores import Chroma
-from langchain.embeddings import OpenAIEmbeddings
 
-from langchain.llms import OpenAI
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
+
+# from langchain.embeddings import OpenAIEmbeddings
+# from langchain.llms import OpenAI
+# from langchain.chat_models import ChatOpenAI
 
 from langchain import hub
 from langchain.chains import RetrievalQA

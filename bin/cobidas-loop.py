@@ -94,6 +94,14 @@ vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings
 retriever = vectorstore.as_retriever()
 
 #
+# set up the model
+#
+
+# select and initialize your model
+llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+# llm = ChatOllama(model="llama3")
+
+#
 # build prompts
 #
 
@@ -102,31 +110,23 @@ retriever = vectorstore.as_retriever()
 
 # rewrite the COBIDAS value as a good prompt
 prompt_redo = PromptTemplate.from_template("""
-You are an assistant for question-answering tasks. Please take the the following text and restate it as a question that can be answered by an LLM with RAG context. Be precise in the details of the question so the model can easily determine if the information exists in the provided context. Restate the imporance of the information in a single sentence before restating the prompt as a question.
+You are an assistant for question-answering tasks. Please restate the imporance of the information in a few sentences before restating the prompt as a question. Be precise when formulating details of the question so an LLM can easily determine if the information exists in the provided RAG context.
 Prompt: {prompt}
 """)
 
 # create the boolean prompt
 prompt_bool = PromptTemplate.from_template("""
 You are an assistant for question-answering tasks. Please use the following pieces of retrieved context to answer the question. You are evaluating whether their is sufficient information within the context to accurately answer the question. Reply with 'YES' if their is enough information to accurately answer the question or 'NO' if there is not enough information to accurately answer the question.
-Question: {question}
 Context: {context}
+Question: {question}
 """)
 
 # create the question extraction prompt
 prompt_question = PromptTemplate.from_template("""
 You are an assistant for question-answering tasks. Please use the following pieces of retrieved context to answer the question. If the answer to the question is not found in the context, say that this aspect was not reported. If you don't know the answer, just say that you don't know. Answer as conciesly as possible.
-Question: {question}
 Context: {context}
+Question: {question}
 """)
-
-#
-# set up the model
-#
-
-# select and initialize your model
-llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
-# llm = ChatOllama(model="llama3")
 
 #
 # "chain" the components together to make a RAG

@@ -1,0 +1,22 @@
+
+import ast
+import json
+import os
+from pathlib import Path
+
+
+# path to labelbuddy data
+datadir = "/home/bcmcpher/Projects/labelbuddy/labelbuddy-annotations/projects/cobidas"
+articles = Path(datadir, "documents", "2023", "documents_00001.jsonl")
+
+# load the json archive of articles
+with open(articles, "r") as json_file:
+    json_list = list(json_file)
+
+
+# split out the first article as a dictionary
+article = ast.literal_eval(json_list[0])
+
+# extract the text from the article
+text = article.get("text")
+
